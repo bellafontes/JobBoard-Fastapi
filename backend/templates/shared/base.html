@@ -11,7 +11,9 @@
 </head>
 
 <body>
-    {% include "components/navbar.html" %}
+    {%  if request.cookies.access_token %}
+        {% include "components/navbar.html" %}
+    {% endif %}
     {% block content %}
     {% endblock %}
 

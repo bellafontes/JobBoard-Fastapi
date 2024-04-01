@@ -8,7 +8,7 @@
 {% block content %}
   <div class="container">
     <div class="row">
-      <h5 class="display-5">Login to JobBoard</h5>
+      <h5 class="display-5">Autenticacao</h5>
       <div class="text-danger font-weight-bold">
           {% for error in errors %}
             <li>{{error}}</li>
@@ -24,7 +24,7 @@
     </div>
 
     <div class="row my-5">
-      <form method="POST">
+      <form method="POST" action="{{ url_for('login') }}">
         <div class="mb-3">
           <label>Email</label>
           <input type="text" required placeholder="Your email" name="email" value="{{email}}" class="form-control">

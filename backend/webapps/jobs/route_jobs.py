@@ -1,12 +1,5 @@
 from typing import Optional
 
-from apis.version1.route_login import get_current_user_from_token
-from db.models.users import User
-from db.repository.jobs import create_new_job
-from db.repository.jobs import list_jobs
-from db.repository.jobs import retreive_job
-from db.repository.jobs import search_job
-from db.session import get_db
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import Request
@@ -14,17 +7,24 @@ from fastapi import responses
 from fastapi import status
 from fastapi.security.utils import get_authorization_scheme_param
 from fastapi.templating import Jinja2Templates
-from schemas.jobs import JobCreate
 from sqlalchemy.orm import Session
-from webapps.jobs.forms import JobCreateForm
 
+from apis.version1.route_login import get_current_user_from_token
+from db.models.users import User
+from db.repository.jobs import create_new_job
+from db.repository.jobs import list_jobs
+from db.repository.jobs import retreive_job
+from db.repository.jobs import search_job
+from db.session import get_db
+from schemas.jobs import JobCreate
+from webapps.jobs.forms import JobCreateForm
 
 templates = Jinja2Templates(directory="templates")
 router = APIRouter(include_in_schema=False)
 
 
-@router.get("/")
-async def home(request: Request, db: Session = Depends(get_db), msg: str = None):
+@router.get("/home")
+async def home(request: Request, db: Session = Depends(get_db), msg: str = None, current_user: User = Depends(get_current_user_from_token)):
     jobs = list_jobs(db=db)
     return templates.TemplateResponse(
         "general_pages/homepage.html", {"request": request, "jobs": jobs, "msg": msg}
@@ -32,7 +32,12 @@ async def home(request: Request, db: Session = Depends(get_db), msg: str = None)
 
 
 @router.get("/details/{id}")
-def job_detail(id: int, request: Request, db: Session = Depends(get_db)):
+def job_detail(
+        id: int,
+        request: Request,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user_from_token)
+):
     job = retreive_job(id=id, db=db)
     return templates.TemplateResponse(
         "jobs/detail.html", {"request": request, "job": job}
@@ -40,7 +45,11 @@ def job_detail(id: int, request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/post-a-job/")
-def create_job(request: Request, db: Session = Depends(get_db)):
+def create_job(
+        request: Request,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user_from_token)
+):
     return templates.TemplateResponse("jobs/create_job.html", {"request": request})
 
 
@@ -70,7 +79,11 @@ async def create_job(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/delete-job/")
-def show_jobs_to_delete(request: Request, db: Session = Depends(get_db)):
+def show_jobs_to_delete(
+        request: Request,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user_from_token)
+):
     jobs = list_jobs(db=db)
     return templates.TemplateResponse(
         "jobs/show_jobs_to_delete.html", {"request": request, "jobs": jobs}
@@ -79,7 +92,10 @@ def show_jobs_to_delete(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/search/")
 def search(
-    request: Request, db: Session = Depends(get_db), query: Optional[str] = None
+        request: Request,
+        db: Session = Depends(get_db),
+        query: Optional[str] = None,
+        current_user: User = Depends(get_current_user_from_token)
 ):
     jobs = search_job(query, db=db)
     return templates.TemplateResponse(

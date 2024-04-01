@@ -37,7 +37,11 @@ def create_job(
 @router.get(
     "/get/{id}", response_model=ShowJob
 )  # if we keep just "{id}" . it would stat catching all routes
-def read_job(id: int, db: Session = Depends(get_db)):
+def read_job(
+        id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user_from_token)
+):
     job = retreive_job(id=id, db=db)
     if not job:
         raise HTTPException(
@@ -48,13 +52,21 @@ def read_job(id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/all", response_model=List[ShowJob])
-def read_jobs(db: Session = Depends(get_db)):
+def read_jobs(
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user_from_token)
+):
     jobs = list_jobs(db=db)
     return jobs
 
 
 @router.put("/update/{id}")
-def update_job(id: int, job: JobCreate, db: Session = Depends(get_db)):
+def update_job(
+        id: int,
+        job: JobCreate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user_from_token)
+):
     current_user = 1
     message = update_job_by_id(id=id, job=job, db=db, owner_id=current_user)
     if not message:
@@ -70,6 +82,7 @@ def delete_job(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_token),
 ):
+    print(f"Vamos apagar! Deleting job...{id}")
     job = retreive_job(id=id, db=db)
     if not job:
         return HTTPException(
@@ -86,7 +99,11 @@ def delete_job(
 
 
 @router.get("/autocomplete")
-def autocomplete(term: Optional[str] = None, db: Session = Depends(get_db)):
+def autocomplete(
+        term: Optional[str] = None,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user_from_token)
+):
     jobs = search_job(term, db=db)
     job_titles = []
     for job in jobs:
